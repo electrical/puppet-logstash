@@ -4,23 +4,19 @@ require 'securerandom'
 
 files_dir = ENV['files_dir'] || '/home/jenkins/puppet'
 
-proxy_host = ENV['proxy_host'] || ''
-
-gem_proxy = ''
-gem_proxy = "http_proxy=http://#{proxy_host}" unless proxy_host.empty?
+proxy_host = ENV['BEAKER_PACKAGE_PROXY'] || ''
 
 if !proxy_host.empty?
+  gem_proxy = "http_proxy=#{proxy_host}"
+
   hosts.each do |host|
-    case host['platform']
-    when /ubuntu/, /debian/
-      on host, "echo 'Acquire::http::Proxy \"http://#{proxy_host}/\";' >> /etc/apt/apt.conf.d/10proxy"
-    when /^el-/, /centos/, /fedora/, /redhat/
-      on host, "echo 'proxy=http://#{proxy_host}/' >> /etc/yum.conf"
-    end
-    on host, "echo 'export http_proxy=\"http://#{proxy_host}\"' >> /root/.bashrc"
-    on host, "echo 'export https_proxy=\"http://#{proxy_host}\"' >> /root/.bashrc"
-    on host, "echo 'export no_proxy=\"localhost,127.0.0.1,localaddress,.localdomain.com,#{host.name}\"' >> /root/.bashrc"
+    on host, "echo 'use_proxy=yes' >> /root/.wgetrc"
+    on host, "echo 'http_proxy='#{proxy_host}'' >> /root/.wgetrc"
+    on host, "echo 'https_proxy='#{proxy_host}'' >> /root/.wgetrc"
+    on host, "echo 'no_proxy=\"localhost,127.0.0.1,localaddress,.localdomain.com,#{host.name}\"' >> /root/.wgetrc"
   end
+else
+  gem_proxy = ''
 end
 
 hosts.each do |host|
