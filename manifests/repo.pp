@@ -42,7 +42,7 @@ class logstash::repo {
         release     => 'stable',
         repos       => 'main',
         key         => 'D88E42B4',
-        key_server  => 'pgp.mit.edu',
+        key_source  => 'http://packages.elasticsearch.org/GPG-KEY-elasticsearch',
         include_src => false,
       }
     }
